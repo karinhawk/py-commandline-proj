@@ -6,7 +6,7 @@ import click
 #bc vscode doesn't automatically know if you're using a virtual env
 import requests
 
-from . import __version__
+from . import __version__, wikipedia
 
 
 
@@ -28,9 +28,7 @@ def main():
     """python time!!"""
     #requests.get is a fetch for url
     #with closes the https connection at the end of the block
-    with requests.get(API_URL, verify=False) as response:
-        response.raise_for_status()
-        data = response.json()
+    data = wikipedia.random_page()
 
     #accessing keyvalue pairs using index title - data is json
     title = data["title"]
@@ -41,6 +39,6 @@ def main():
     #textwrap literally just wraps the text - can specify width of characters
     click.echo(textwrap.fill(extract))
 
-    
+
 
 

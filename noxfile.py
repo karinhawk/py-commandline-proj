@@ -4,13 +4,27 @@ import tempfile
 # if nox is run without arguments, it will only run lint and tests
 nox.options.sessions = "lint", "safety", "tests"
 
+# wrapper to install specific versions of dependencies
+def install_with_constraints(session, *args, **kwargs):
+    with tempfile.NamedTemporaryFile() as requirements:
+        session.run(
+            "poetry",
+            "export",
+            "--dev",
+            "--format=requirements.txt",
+            f"--output={requirements.name}",
+            external=True,
+        )
+    session.install(f"--constraint={requirements.name}", *args, **kwargs)
+
 
 @nox.session(python=["3.8", "3.7", "3.9"])
 def tests(session):
     # excludes e2e tests from automated testing
     # (not is keyword and e2e tests are marked as e2e)
     args = session.posargs or ["--cov", "-m", "not e2e"]
-    session.run("poetry", "install", external=True)
+    session.run("poetry", "install", "--no-dev", external=True)
+    install_with_constraints(session, "coverage[toml]", "pytest", "pytest-cov", "pytest-mock")
     # Use *args when you have a variable number of arguments
     session.run("pytest", *args)
 
@@ -29,7 +43,8 @@ def lint(session):
     # the warnings will trigger if black is going to reformat a src file
     # import-order orders import statements by google std
     # bugbear finds bugs/design problems
-    session.install(
+    install_with_constraints(
+        session,
         "flake8",
         "flake8-bandit",
         "flake8-black",
@@ -52,7 +67,7 @@ def lint(session):
 @nox.session(python="3.8")
 def black(session):
     args = session.posargs or locations
-    session.install("black")
+    install_with_constraints(session, "black")
     session.run("black", *args)
 
 # uses poetry export to convert poetry lock file to a requirements file
@@ -68,6 +83,6 @@ def safety(session):
             f"--output={requirements.name}",
             external=True,
         )
-        session.install("safety")
+        install_with_constraints(session, "safety")
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
 

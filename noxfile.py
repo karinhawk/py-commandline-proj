@@ -2,13 +2,14 @@ import tempfile
 
 import nox
 
-
+package = "py_commandline_proj"
 # if nox is run without arguments, it will only run lint and tests
-nox.options.sessions = "lint", "safety", "tests"
+nox.options.sessions = "lint", "safety", "mypy", "tests"
 # run linting(flake8) on three locations automatically for coverage
 # but can override this
 # override using -- which separates the option from nox's options
 locations = "src", "tests", "noxfile.py"
+
 
 # wrapper to install specific versions of dependencies
 def install_with_constraints(session, *args, **kwargs):
@@ -18,10 +19,11 @@ def install_with_constraints(session, *args, **kwargs):
             "export",
             "--dev",
             "--format=requirements.txt",
+            # "--without-hashes",
             f"--output={requirements.name}",
             external=True,
         )
-    session.install(f"--constraint={requirements.name}", *args, **kwargs)
+        session.install(f"--constraint={requirements.name}", *args, **kwargs)
 
 
 @nox.session(python=["3.8", "3.7", "3.9"])
@@ -88,3 +90,10 @@ def safety(session):
         )
         install_with_constraints(session, "safety")
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
+
+
+@nox.session(python=["3.8", "3.7", "3.9"])
+def mypy(session):
+    args = session.posargs or locations
+    install_with_constraints(session, "mypy")
+    session.run("mypy", *args)

@@ -1,8 +1,14 @@
-import nox
 import tempfile
+
+import nox
+
 
 # if nox is run without arguments, it will only run lint and tests
 nox.options.sessions = "lint", "safety", "tests"
+# run linting(flake8) on three locations automatically for coverage
+# but can override this
+# override using -- which separates the option from nox's options
+locations = "src", "tests", "noxfile.py"
 
 # wrapper to install specific versions of dependencies
 def install_with_constraints(session, *args, **kwargs):
@@ -24,15 +30,11 @@ def tests(session):
     # (not is keyword and e2e tests are marked as e2e)
     args = session.posargs or ["--cov", "-m", "not e2e"]
     session.run("poetry", "install", "--no-dev", external=True)
-    install_with_constraints(session, "coverage[toml]", "pytest", "pytest-cov", "pytest-mock")
+    install_with_constraints(
+        session, "coverage[toml]", "pytest", "pytest-cov", "pytest-mock"
+    )
     # Use *args when you have a variable number of arguments
     session.run("pytest", *args)
-
-
-# run linting(flake8) on three locations automatically for coverage
-# but can override this
-# override using -- which separates the option from nox's options
-locations = "src", "tests", "noxfile.py"
 
 
 @nox.session(python=["3.8", "3.7", "3.9"])
@@ -49,7 +51,7 @@ def lint(session):
         "flake8-bandit",
         "flake8-black",
         "flake8-bugbear",
-        "flake8-import-order"
+        "flake8-import-order",
     )
     session.run("flake8", *args)
 
@@ -70,6 +72,7 @@ def black(session):
     install_with_constraints(session, "black")
     session.run("black", *args)
 
+
 # uses poetry export to convert poetry lock file to a requirements file
 @nox.session(python="3.8")
 def safety(session):
@@ -85,4 +88,3 @@ def safety(session):
         )
         install_with_constraints(session, "safety")
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
-

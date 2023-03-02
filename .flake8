@@ -2,7 +2,7 @@
 # plugin warnings
 select = B,B9,BLK,C,E,F,I,S,W
 # E203 = whitespace before :  W503 = line break before binary operator
-ignore = E203,E501,W503
+ignore = E203,E501,W503,S501
 per-file-ignores = tests/*:S101
 max-line-length = 88
 max-complexity = 10

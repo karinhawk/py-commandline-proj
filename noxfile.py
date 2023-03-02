@@ -4,7 +4,7 @@ import nox
 
 package = "py_commandline_proj"
 # if nox is run without arguments, it will only run lint and tests
-nox.options.sessions = "lint", "safety", "mypy", "tests"
+nox.options.sessions = "lint", "safety", "mypy", "pytype", "tests"
 # run linting(flake8) on three locations automatically for coverage
 # but can override this
 # override using -- which separates the option from nox's options
@@ -19,11 +19,11 @@ def install_with_constraints(session, *args, **kwargs):
             "export",
             "--dev",
             "--format=requirements.txt",
-            # "--without-hashes",
+            "--without-hashes",
             f"--output={requirements.name}",
             external=True,
         )
-        session.install(f"--constraint={requirements.name}", *args, **kwargs)
+        session.install(f"--requirement={requirements.name}", *args, **kwargs)
 
 
 @nox.session(python=["3.8", "3.7", "3.9"])
@@ -84,7 +84,7 @@ def safety(session):
             "export",
             "--dev",
             "--format=requirements.txt",
-            "--without-hashes",
+            # "--without-hashes",
             f"--output={requirements.name}",
             external=True,
         )
@@ -92,8 +92,15 @@ def safety(session):
         session.run("safety", "check", f"--file={requirements.name}", "--full-report")
 
 
-@nox.session(python=["3.8", "3.7", "3.9"])
+@nox.session(python=["3.8", "3.9"])
 def mypy(session):
     args = session.posargs or locations
     install_with_constraints(session, "mypy")
     session.run("mypy", *args)
+
+
+@nox.session(python="3.7")
+def pytype(session):
+    args = session.posargs or ["--disable=import-error", *locations]
+    install_with_constraints(session, "pytype")
+    session.run("pytype", *args)

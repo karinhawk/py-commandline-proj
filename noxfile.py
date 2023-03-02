@@ -1,7 +1,8 @@
 import nox
+import tempfile
 
 # if nox is run without arguments, it will only run lint and tests
-nox.options.sessions = "lint", "tests"
+nox.options.sessions = "lint", "safety", "tests"
 
 
 @nox.session(python=["3.8", "3.7", "3.9"])
@@ -26,7 +27,15 @@ def lint(session):
     # installs flake8 via pip into the virtual environment
     # the second argument here is to enable flake8 warnings
     # the warnings will trigger if black is going to reformat a src file
-    session.install("flake8", "flake8-black")
+    # import-order orders import statements by google std
+    # bugbear finds bugs/design problems
+    session.install(
+        "flake8",
+        "flake8-bandit",
+        "flake8-black",
+        "flake8-bugbear",
+        "flake8-import-order"
+    )
     session.run("flake8", *args)
 
 
@@ -45,3 +54,20 @@ def black(session):
     args = session.posargs or locations
     session.install("black")
     session.run("black", *args)
+
+# uses poetry export to convert poetry lock file to a requirements file
+@nox.session(python="3.8")
+def safety(session):
+    with tempfile.NamedTemporaryFile() as requirements:
+        session.run(
+            "poetry",
+            "export",
+            "--dev",
+            "--format=requirements.txt",
+            "--without-hashes",
+            f"--output={requirements.name}",
+            external=True,
+        )
+        session.install("safety")
+        session.run("safety", "check", f"--file={requirements.name}", "--full-report")
+

@@ -28,7 +28,7 @@ API_URL = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
     default="en",
     help="Language edition of Wikipedia",
     metavar="LANG",
-    show_default=True
+    show_default=True,
 )
 @click.version_option(version=__version__)
 # creates new function - use click.group if you want to

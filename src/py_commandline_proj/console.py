@@ -33,18 +33,15 @@ API_URL = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
 @click.version_option(version=__version__)
 # creates new function - use click.group if you want to
 # group functions together in separate package thing
-def main(language):
+def main(language: str) -> None:
     """python time!!"""
     # requests.get is a fetch for url
     # with closes the https connection at the end of the block
-    data = wikipedia.random_page(language=language)
+    page = wikipedia.random_page(language=language)
 
-    # accessing keyvalue pairs using index title - data is json
-    title = data["title"]
-    extract = data["extract"]
     # outputs to console, but with style!
     # can change colours and size and stuff (style echo = secho)
-    click.secho(title, fg="green")
+    click.secho(page.title, fg="green")
     # outputs to console
     # textwrap literally just wraps the text - can specify width of characters
-    click.echo(textwrap.fill(extract))
+    click.echo(textwrap.fill(page.extract))

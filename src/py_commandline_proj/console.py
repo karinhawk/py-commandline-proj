@@ -21,14 +21,23 @@ from . import __version__, wikipedia
 API_URL = "https://en.wikipedia.org/api/rest_v1/page/random/summary"
 
 @click.command()
+@click.option(
+    #the --language will turn into the lagnuage argument passed into main
+    "--language",
+    "-l",
+    default="en",
+    help="Language edition of Wikipedia",
+    metavar="LANG",
+    show_default=True
+)
 @click.version_option(version=__version__)
 
 #creates new function - use click.group if you want to group functions together in separate package thing
-def main():
+def main(language):
     """python time!!"""
     #requests.get is a fetch for url
     #with closes the https connection at the end of the block
-    data = wikipedia.random_page()
+    data = wikipedia.random_page(language=language)
 
     #accessing keyvalue pairs using index title - data is json
     title = data["title"]

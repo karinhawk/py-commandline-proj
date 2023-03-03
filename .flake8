@@ -1,9 +1,9 @@
 [flake8]
 # plugin warnings
-select = B,B9,BLK,C,E,F,I,S,W
+select = ANN,B,B9,BLK,C,E,F,I,S,W
 # E203 = whitespace before :  W503 = line break before binary operator
 ignore = E203,E501,W503,S501
-per-file-ignores = tests/*:S101
+per-file-ignores = tests/*:S101,ANN noxfile.py:ANN
 max-line-length = 88
 max-complexity = 10
 application-import-names = py_commandline_proj,tests
